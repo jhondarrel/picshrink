@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PicShrink — 2x2, 1x1 & Passport Photo Resizer</title>
+  <meta name="description" content="picshrink: Effortlessly resize, align, and print compliant 2x2, 1x1, and passport photos with biometric alignment, print-ready sheets, and 100% private in-browser processing.">
+  <link rel="icon" type="image/png" href="picshrink.png">
+
+  <!-- Vendor CSS -->
+  <link rel="stylesheet" href="vendor/cropper.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <img src="picshrink.png" alt="picshrink logo" class="brand-logo-img">
+        <div>
+          <div class="brand-title">Pic<span class="brand-title-accent">Shrink</span></div>
+          <div class="brand-subtitle">Passport, Visa & 2x2 ID Photo Resizer</div>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <span class="badge badge-privacy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          100% Private (Runs In-Browser)
+        </span>
+        <button id="btnHeaderUpload" class="btn btn-outline btn-sm hidden">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Change Photo
+        </button>
+        <button id="btnHeaderCamera" class="btn btn-outline btn-sm hidden">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          Camera
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- UPLOAD HERO (Visible when no photo is loaded) -->
+    <section id="uploadSection" class="upload-hero">
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="hidden">
+      
+      <div class="upload-icon-wrapper">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      </div>
+
+      <h2>Upload Your Photo to <span>picshrink</span></h2>
+      <p>Drag and drop your picture here, take a quick photo with your webcam, or choose a pre-made sample to test the editor.</p>
+
+      <div class="upload-actions">
+        <button id="btnUpload" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Select Photo from Computer
+        </button>
+        <button id="btnCamera" class="btn btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          Use Webcam
+        </button>
+      </div>
+
+      <div class="sample-prompts">
+        <span>Or test immediately:</span>
+        <button id="btnSample1" class="btn btn-secondary btn-sm">Sample Portrait 1</button>
+        <button id="btnSample2" class="btn btn-secondary btn-sm">Sample Portrait 2</button>
+      </div>
+    </section>
+
+    <!-- STUDIO EDITOR LAYOUT (Visible when photo is loaded) -->
+    <section id="editorSection" class="editor-layout hidden">
+      
+      <!-- LEFT COLUMN: Presets & Custom Size Selector -->
+      <aside class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+            Photo Size Presets
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- Search box -->
+          <div class="preset-search-box">
+            <span class="preset-search-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input type="text" id="presetSearch" placeholder="Search size, country, 2x2, 1x1...">
+          </div>
+
+          <!-- Category Chips -->
+          <div class="category-chips" id="categoryChips">
+            <button class="chip active" data-category="all">All</button>
+            <button class="chip" data-category="popular">Popular</button>
+            <button class="chip" data-category="ph">Philippines</button>
+            <button class="chip" data-category="us">USA</button>
+            <button class="chip" data-category="ca">Canada</button>
+            <button class="chip" data-category="asia">Asia</button>
+            <button class="chip" data-category="standard">Standard</button>
+          </div>
+
+          <!-- Presets List -->
+          <div class="preset-list" id="presetListContainer">
+            <!-- Dynamically populated from presets.js -->
+          </div>
+
+          <!-- Custom Dimensions -->
+          <div class="custom-size-box">
+            <div class="accordion-title" id="toggleCustomSize">
+              <span>Custom Size Builder</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div id="customSizeContent" class="accordion-content hidden">
+              <div class="custom-grid">
+                <div class="input-group">
+                  <label for="customWidth">Width</label>
+                  <input type="number" id="customWidth" value="2" step="0.1" min="0.5">
+                </div>
+                <div class="input-group">
+                  <label for="customHeight">Height</label>
+                  <input type="number" id="customHeight" value="2" step="0.1" min="0.5">
+                </div>
+                <div class="input-group">
+                  <label for="customUnit">Unit</label>
+                  <select id="customUnit">
+                    <option value="in" selected>Inches (in)</option>
+                    <option value="mm">Millimeters (mm)</option>
+                    <option value="cm">Centimeters (cm)</option>
+                    <option value="px">Pixels (px)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="custom-grid" style="grid-template-columns: 1fr 1fr; margin-top: 0.5rem;">
+                <div class="input-group">
+                  <label for="customDpi">DPI</label>
+                  <select id="customDpi">
+                    <option value="300" selected>300 DPI (Print standard)</option>
+                    <option value="600">600 DPI (Ultra sharp)</option>
+                    <option value="150">150 DPI (Draft)</option>
+                    <option value="72">72 DPI (Web)</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                  <button id="btnApplyCustom" class="btn btn-primary btn-sm" style="width: 100%;">Apply Custom</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN: Interactive Cropping Studio -->
+      <section class="stage-panel">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="22" y1="12" x2="18" y2="12"></line>
+                <line x1="6" y1="12" x2="2" y2="12"></line>
+                <line x1="12" y1="6" x2="12" y2="2"></line>
+                <line x1="12" y1="22" x2="12" y2="18"></line>
+              </svg>
+              Biometric Alignment & Cropping Studio
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span id="activePresetBadge" class="badge badge-info">2 x 2 in (600x600 px)</span>
+            </div>
+          </div>
+
+          <!-- Cropper Stage -->
+          <div class="cropper-stage-container" id="stageContainer">
+            <img id="cropperImage" alt="Passport Subject">
+            <!-- Biometric Overlay Canvas -->
+            <canvas id="biometricCanvas" class="biometric-canvas-overlay"></canvas>
+          </div>
+
+          <!-- Cropper Controls Toolbar -->
+          <div class="stage-toolbar">
+            <div class="tool-group">
+              <button id="btnZoomIn" class="btn btn-outline btn-icon" title="Zoom In">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </button>
+              <button id="btnZoomOut" class="btn btn-outline btn-icon" title="Zoom Out">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </button>
+              <button id="btnResetCrop" class="btn btn-outline btn-sm" title="Reset Positioning">Reset</button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+              <button id="btnRotateCCW" class="btn btn-outline btn-icon" title="Rotate 90° Counter-Clockwise">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
+              </button>
+              <button id="btnRotateCW" class="btn btn-outline btn-icon" title="Rotate 90° Clockwise">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                  <path d="M21 3v5h-5"></path>
+                </svg>
+              </button>
+              <button id="btnFlipH" class="btn btn-outline btn-icon" title="Flip Horizontal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="8 4 4 12 8 20"></polyline>
+                  <polyline points="16 4 20 12 16 20"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="22"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="slider-group">
+              <span>Fine Tilt:</span>
+              <input type="range" id="rotateSlider" class="range-slider" min="-45" max="45" value="0" step="0.5" style="width: 90px;">
+              <span id="rotateValue" class="font-mono">0°</span>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+              <label class="switch-label" title="Show Biometric Face Alignment Guide">
+                <span class="switch">
+                  <input type="checkbox" id="toggleBiometricGuide" checked>
+                  <span class="slider-switch"></span>
+                </span>
+                <span>Biometric Guide</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bottom Accordions: Background, Adjustments, Nametag -->
+          <div class="panel-body" style="padding-top: 0.5rem;">
+            <!-- Background Section -->
+            <div class="accordion-item">
+              <div class="accordion-title" id="toggleBgSection">
+                <span>Official Background Color & Replacement</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div id="bgSectionContent" class="accordion-content">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                  <label class="switch-label">
+                    <span class="switch">
+                      <input type="checkbox" id="toggleBgReplace">
+                      <span class="slider-switch"></span>
+                    </span>
+                    <span>Enable Background Color Replacement</span>
+                  </label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);" id="bgRecommendationNote">Recommended: Pure White</span>
+                </div>
+
+                <div class="color-palette" id="colorPalette">
+                  <!-- Populated by JS -->
+                </div>
+
+                <div id="bgToleranceControls" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; background: var(--surface-alt); padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--accent-teal);">
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Color Tolerance: <span id="toleranceVal">28</span></label>
+                    <input type="range" id="toleranceSlider" class="range-slider" min="5" max="65" value="28" style="width: 100%;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Edge Softness: <span id="featherVal">2</span></label>
+                    <input type="range" id="featherSlider" class="range-slider" min="1" max="5" value="2" style="width: 100%;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Adjustments Section -->
+            <div class="accordion-item">
+              <div class="accordion-title" id="toggleAdjSection">
+                <span>Lighting & Sharpness Enhancements</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div id="adjSectionContent" class="accordion-content hidden">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Brightness: <span id="valBrightness">0</span></label>
+                    <input type="range" id="sliderBrightness" class="range-slider" min="-50" max="50" value="0" style="width: 100%;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Contrast: <span id="valContrast">0</span></label>
+                    <input type="range" id="sliderContrast" class="range-slider" min="-50" max="50" value="0" style="width: 100%;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Sharpness / Clarity: <span id="valSharpness">0</span></label>
+                    <input type="range" id="sliderSharpness" class="range-slider" min="0" max="80" value="0" style="width: 100%;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Warmth / Temperature: <span id="valWarmth">0</span></label>
+                    <input type="range" id="sliderWarmth" class="range-slider" min="-40" max="40" value="0" style="width: 100%;">
+                  </div>
+                </div>
+                <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button id="btnAutoEnhance" class="btn btn-purple btn-sm">Auto Enhance</button>
+                  <button id="btnResetAdjustments" class="btn btn-outline btn-sm">Reset</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Philippine PRC / Board Exam Nametag Strip -->
+            <div class="accordion-item">
+              <div class="accordion-title" id="toggleNametagSection">
+                <span>Name Tag Strip (PRC / Civil Service / School ID)</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div id="nametagSectionContent" class="accordion-content hidden">
+                <div style="margin-bottom: 0.75rem;">
+                  <label class="switch-label">
+                    <span class="switch">
+                      <input type="checkbox" id="toggleNametag">
+                      <span class="slider-switch"></span>
+                    </span>
+                    <span>Include White Nametag Strip at Bottom</span>
+                  </label>
+                </div>
+                <div id="nametagInputs" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div class="input-group">
+                    <label for="nametagFullName">Full Name (SURNAME, FIRST M.I.)</label>
+                    <input type="text" id="nametagFullName" placeholder="e.g. DELA CRUZ, JUAN P.">
+                  </div>
+                  <div class="input-group">
+                    <label for="nametagProfession">Profession / Title / Date (Optional)</label>
+                    <input type="text" id="nametagProfession" placeholder="e.g. REGISTERED NURSE">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Live Previews, Printable Sheet & Export -->
+      <aside class="panel panel-purple preview-column">
+        <!-- Tabs -->
+        <div class="preview-tabs">
+          <button class="tab-btn active" id="tabSinglePhoto">Single Photo</button>
+          <button class="tab-btn" id="tabPrintSheet">Printable Sheet</button>
+        </div>
+
+        <div class="panel-body">
+          <!-- TAB 1: Single Photo Preview -->
+          <div id="viewSinglePhoto">
+            <div class="preview-display-box">
+              <div class="preview-canvas-wrapper">
+                <canvas id="singlePhotoCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Specifications Grid -->
+            <div class="spec-grid">
+              <div class="spec-item">
+                <span class="spec-label">Dimensions</span>
+                <span class="spec-val" id="specDimText">2.00 x 2.00 in</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Pixel Resolution</span>
+                <span class="spec-val" id="specResolutionText">600 x 600 px</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Print Quality</span>
+                <span class="spec-val" id="specDpiText">300 DPI (HQ)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Estimated Size</span>
+                <span class="spec-val" id="specFileSizeText">~140 KB</span>
+              </div>
+            </div>
+
+            <!-- Compliance Checklist -->
+            <div class="compliance-status">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span id="complianceText">Complies with US State Dept & official 2x2 requirements</span>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="export-section">
+              <div style="display: flex; gap: 0.5rem;">
+                <select id="exportFormat" class="input-group" style="flex: 1; padding: 0.55rem; border-radius: var(--radius); border: 1px solid var(--accent-teal);">
+                  <option value="image/jpeg">JPEG (.jpg)</option>
+                  <option value="image/png">PNG (.png)</option>
+                </select>
+                <button id="btnDownloadSingle" class="btn btn-primary" style="flex: 2;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Download Photo
+                </button>
+              </div>
+
+              <button id="btnDownloadCompliant240" class="btn btn-gold btn-sm" title="US State Dept DV Lottery requires <= 240 KB">
+                Download DV Lottery / State Dept Ready (&le; 240 KB)
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: Printable Sheet Preview -->
+          <div id="viewPrintSheet" class="hidden">
+            <div class="preview-display-box" style="min-height: 280px;">
+              <div class="preview-canvas-wrapper">
+                <canvas id="printSheetCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Sheet Controls -->
+            <div class="sheet-options-box">
+              <div class="input-group">
+                <label for="selectSheetPreset">Paper Size</label>
+                <select id="selectSheetPreset" style="border: 1px solid var(--accent-teal);">
+                  <!-- Populated from SHEET_PRESETS in presets.js -->
+                </select>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="switch-label">
+                  <span class="switch">
+                    <input type="checkbox" id="toggleCutLines" checked>
+                    <span class="slider-switch"></span>
+                  </span>
+                  <span>Scissor Cut Guidelines</span>
+                </label>
+
+                <label class="switch-label">
+                  <span class="switch">
+                    <input type="checkbox" id="toggleBorder" checked>
+                    <span class="slider-switch"></span>
+                  </span>
+                  <span>Thin Cutting Border</span>
+                </label>
+              </div>
+
+              <div style="background: var(--primary-light); border: 1px solid var(--accent-teal); padding: 0.6rem 0.75rem; border-radius: var(--radius); font-size: 0.78rem;">
+                <span id="sheetInfoText">Fills up to 6 photos on standard 4x6" photo card. Print at CVS, Walgreens, or home!</span>
+              </div>
+
+              <!-- Sheet Actions -->
+              <div class="export-section">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                  <button id="btnDownloadSheetJpg" class="btn btn-outline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download JPG
+                  </button>
+                  <button id="btnDownloadSheetPdf" class="btn btn-purple">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Download PDF
+                  </button>
+                </div>
+                <button id="btnPrintSheetNow" class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                  Print Sheet (100% Scale)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </section>
+
+  </main>
+
+  <!-- WEBCAM MODAL -->
+  <div id="cameraModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          Webcam Photo Capture
+        </div>
+        <button id="btnCloseCamera" class="btn btn-outline btn-sm">Cancel</button>
+      </div>
+      <div class="camera-preview-container">
+        <video id="webcamVideo" autoplay playsinline></video>
+        <canvas id="cameraGuideCanvas" class="camera-biometric-guide"></canvas>
+        <div id="cameraCountdown" class="camera-countdown hidden">3</div>
+      </div>
+      <div class="panel-body" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Position your head inside the guide oval</span>
+        <button id="btnSnapPhoto" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+          Take Photo (3s Timer)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Only Hidden Container (For window.print()) -->
+  <div id="printOnlyContainer" class="hidden">
+    <img id="printImageTarget" alt="Print Layout">
+  </div>
+
+  <!-- Vendor JS -->
+  <script src="vendor/cropper.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+
+  <!-- Application Logic -->
+  <script src="js/presets.js"></script>
+  <script src="js/canvas-utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
